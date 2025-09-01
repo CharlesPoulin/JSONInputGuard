@@ -8,7 +8,8 @@ Targets:
 Commands:
 - Build: `make build`
 - Run: `make run` (listens on :8080)
-- Benchmarks: `make bench` and `make bench-guard`
+- Test: `make test`
+- Benchmarks: `make bench`, `make bench-guard`, and `make benchmark-all`
 - Lambda artifact: `make lambda` -> `lambda.zip`
 
 Notes:

@@ -35,8 +35,36 @@ func makePayload(targetBytes int) []byte {
 	return b
 }
 
+func BenchmarkDecodeValidate1KB(b *testing.B) {
+	payload := makePayload(1 * 1024)
+	b.ReportAllocs()
+	b.SetBytes(int64(len(payload)))
+	w := httptest.NewRecorder()
+	for i := 0; i < b.N; i++ {
+		var req types.PredictRequest
+		r := httptest.NewRequest("POST", "/predict", bytes.NewReader(payload))
+		if err := guard.DecodeValidateJSON(w, r, &req, func(p *types.PredictRequest) error { return validate.V().Struct(p) }); err != nil {
+			b.Fatalf("err: %v", err)
+		}
+	}
+}
+
 func BenchmarkDecodeValidate64KB(b *testing.B) {
 	payload := makePayload(64 * 1024)
+	b.ReportAllocs()
+	b.SetBytes(int64(len(payload)))
+	w := httptest.NewRecorder()
+	for i := 0; i < b.N; i++ {
+		var req types.PredictRequest
+		r := httptest.NewRequest("POST", "/predict", bytes.NewReader(payload))
+		if err := guard.DecodeValidateJSON(w, r, &req, func(p *types.PredictRequest) error { return validate.V().Struct(p) }); err != nil {
+			b.Fatalf("err: %v", err)
+		}
+	}
+}
+
+func BenchmarkDecodeValidate1MB(b *testing.B) {
+	payload := makePayload(1 * 1024 * 1024)
 	b.ReportAllocs()
 	b.SetBytes(int64(len(payload)))
 	w := httptest.NewRecorder()

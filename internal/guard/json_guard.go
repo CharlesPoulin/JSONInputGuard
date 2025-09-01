@@ -34,6 +34,7 @@ func DecodeValidateJSON[T any](w http.ResponseWriter, r *http.Request, dst *T, v
     for {
         if len(buf) == cap(buf) {
             // Should not happen due to MaxBytesReader, but guard anyway
+            http.Error(w, "payload too large", http.StatusRequestEntityTooLarge)
             return errors.New("payload too large")
         }
         // Extend slice for next read chunk
@@ -59,22 +60,26 @@ func DecodeValidateJSON[T any](w http.ResponseWriter, r *http.Request, dst *T, v
     }
 
 	if len(buf) == 0 {
+        http.Error(w, "empty body", http.StatusBadRequest)
 		return errors.New("empty body")
 	}
 
 	// Fast path: validate shape from raw, then decode
 	if pr, ok := any(dst).(*types.PredictRequest); ok {
 		if err := GuardAndDecodePredict(buf, pr); err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
 			return err
 		}
 	} else {
 		if err := json.Unmarshal(buf, dst); err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
 			return err
 		}
 	}
 
 	if validateFn != nil {
 		if err := validateFn(dst); err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
 			return err
 		}
 	}
